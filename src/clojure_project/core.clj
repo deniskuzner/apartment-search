@@ -1,7 +1,7 @@
 (ns clojure-project.core
   (:require [net.cgrand.enlive-html :as enlive]))
 
-(def NEKRETNINE-RS-URL "https://www.nekretnine.rs/stambeni-objekti/stanovi/izdavanje-prodaja/izdavanje/cena/0_300/lista/po-stranici/10/stranica/23/")
+(def URL "https://www.nekretnine.rs/stambeni-objekti/stanovi/izdavanje-prodaja/izdavanje/cena/0_300/lista/po-stranici/10/stranica/23/")
 
 (defn html-data
   [url]
@@ -9,12 +9,12 @@
    java.net.URL.
    enlive/html-resource))
 
-(defn nekretnine-rs-result-count
+(defn get-result-count
   [html-data]
   (Integer/parseInt (first (clojure.string/split (first (get (first
    (enlive/select html-data [:div.d-flex.justify-content-between.col-12.pb-2 :span])) :content)) #" "))))
 
-(defn nekretnine-rs-page-count
+(defn get-page-count
   [result-count]
   (if (< result-count 20)
     1
@@ -23,39 +23,35 @@
       (+ (quot result-count 20) 1)))
   )
 
-(defn nekretnine-rs-rows
+(defn get-rows
   [html-data]
-  (enlive/select html-data [:div.row.offer]))
+  (enlive/select html-data [:div.offer-body]))
 
-(defn nekretnine-rs-name
-  [rows]
-  (enlive/select rows [:h2 :a]))
+(defn get-name
+  [row]
+  (clojure.string/trim (first (get (first (enlive/select row [:h2 :a])) :content))))
 
-(defn drop-surface
-  [rows]
-  (lazy-seq
-    (if (seq rows)
-      (concat (take (dec 2) rows)
-              (drop-surface (drop 2 rows))))))
+(defn get-price
+  [row]
+  (first (get (first (enlive/select row [:p.offer-price :span])) :content)))
 
-(defn nekretnine-rs-price
-  [rows]
-  (def elements (enlive/select rows [:p.offer-price :span]))
-  (drop-surface elements))
+(defn get-surface
+  [row]
+  (first (get (first (enlive/select row [:p.offer-price.offer-price--invert :span])) :content)))
 
-(defn nekretnine-rs-surface
-  [rows]
-  (enlive/select rows [:p.offer-price.offer-price--invert :span]))
+(defn get-location
+  [row]
+  (clojure.string/trim (first (get (first (enlive/select row [:p.offer-location])) :content))))
 
-(defn nekretnine-rs-location
-  [rows]
-  (enlive/select rows [:p.offer-location]))
-
-(defn nekretnine-rs-href
-  [rows]
-  (get-in (first (enlive/select rows [:h2 :a])) [:attrs :href]))
+(defn get-href
+  [row]
+  (str "https://www.nekretnine.rs" (get-in (first (enlive/select row [:h2 :a])) [:attrs :href])))
 
 (defn -main
   "I don't do a whole lot...yet."
   [& args]
-  (println (nekretnine-rs-page-count (nekretnine-rs-result-count (html-data NEKRETNINE-RS-URL)))))
+  (println (get-page-count (get-result-count (html-data URL)))))
+
+(defn -main
+  [& args]
+  (doseq [i (into [] (get-rows (html-data URL)))] (println (get-href i))))
