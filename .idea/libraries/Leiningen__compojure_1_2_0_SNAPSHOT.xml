@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: compojure:1.2.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/compojure/compojure/1.2.0-SNAPSHOT/compojure-1.2.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

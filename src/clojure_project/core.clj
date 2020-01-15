@@ -55,3 +55,16 @@
 (defn -main
   [& args]
   (doseq [i (into [] (get-rows (html-data URL)))] (println (get-href i))))
+
+(defn -main
+  [& args]
+  (def map-list (for [i (get-rows (html-data URL))] {:name (get-name i) :price (get-price i) :surface (get-surface i)
+                                                     :location (get-location i) :href (get-href i)}))
+  (println map-list))
+
+(defn -main
+  [& args]
+  (def rezultat (mapv (fn [row] {:name (get-name row) :price (get-price row) :surface (get-surface row)
+                          :location (get-location row) :href (get-href row)}) (get-rows (html-data URL))))
+  (println rezultat)
+  )
