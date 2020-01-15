@@ -7,5 +7,6 @@
                  [enlive "1.1.6"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-jetty-adapter "1.7.1"]
+                 [ring/ring-json "0.5.0"]
                  [compojure "1.2.0-SNAPSHOT"]]
   :repl-options {:init-ns clojure-project.core})
