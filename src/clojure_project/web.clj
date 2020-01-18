@@ -24,19 +24,40 @@
    )
   )
 
+(defn construct-city-part
+  [req]
+  (if-not (clojure.string/blank? (:cityPart req))
+    (str "/deo-grada/" (clojure.string/replace (:cityPart req) " " "-"))))
+
+(defn construct-city
+  [req]
+  (if-not (clojure.string/blank? (:city req))
+    (str "/grad/" (clojure.string/replace (:city req) " " "-"))))
+
+(defn construct-price
+  [req]
+  (if-not (and (= 0 (:minPrice req)) (= 0 (:maxPrice req)))
+    (str "/cena/" (:minPrice req) "_" (:maxPrice req))))
+
+(defn construct-url
+  [req]
+  (str "https://www.nekretnine.rs/stambeni-objekti/stanovi/izdavanje-prodaja/izdavanje"
+       (construct-city-part req) (construct-city req) (construct-price req) "/lista/po-stranici/10/")
+  )
+
 (defroutes my_routes
            (GET "/" [] (response "Pocetna"))
            (GET "/hello" [] {:status  200
                              :headers {"Content-Type" "application/json"}
                              :body    "Hello"})
            (GET "/rest" [] (response [{:ime "Pera" :prezime "Peric"} {:ime "Mika" :prezime "Mikic"}]))
-           (GET "/vue" [request] (response request))
+           (POST "/vue" [] (fn [req] (construct-url (:body req))))
            (route/resources "/"))
 
-(def app (wrap-cors (wrap-json-response (allow-cross-origin my_routes)) :access-control-allow-methods #{:get :post :delete :options}
-                    :access-control-allow-headers #{:accept :content-type}
-                    :access-control-allow-origin [#"http://localhost:8080"]
-                    ))
+(def app (wrap-json-body (wrap-cors (wrap-json-response (allow-cross-origin my_routes)) :access-control-allow-methods #{:get :post :delete :options}
+                                    :access-control-allow-headers #{:accept :content-type}
+                                    :access-control-allow-origin [#"http://localhost:8080"]
+                                    ) {:keywords? true}))
 
 (defn -main
   [& args]
