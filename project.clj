@@ -10,5 +10,7 @@
                  [ring/ring-json "0.5.0"]
                  [ring-cors "0.1.13"]
                  [metosin/ring-http-response "0.9.0"]
-                 [compojure "1.2.0-SNAPSHOT"]]
+                 [compojure "1.2.0-SNAPSHOT"]
+                 [org.clojure/java.jdbc "0.7.11"]
+                 [mysql/mysql-connector-java "5.1.25"]]
   :repl-options {:init-ns clojure-project.core})

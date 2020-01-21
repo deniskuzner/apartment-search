@@ -1,5 +1,6 @@
 (ns clojure-project.web
   (:require [clojure-project.core :as core]
+            [clojure-project.database :as db]
             [compojure.route :as route]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.http-response :as http])
@@ -37,6 +38,9 @@
 
 (defroutes my_routes
            (POST "/search" [] (fn [req] (search (:body req))))
+           (GET "/mysql" [] (db/select))
+           (POST "/registration" [] (fn [req] (db/registration (:body req))))
+           (POST "/login" [] (fn [req] (db/login (:body req))))
            (route/resources "/"))
 
 (def app (wrap-json-body (wrap-cors (wrap-json-response (allow-cross-origin my_routes)) :access-control-allow-methods #{:get :post :delete :options}
