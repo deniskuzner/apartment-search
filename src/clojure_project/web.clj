@@ -34,7 +34,8 @@
                       core/get-result-count
                       core/get-page-count))
   (def url-list (core/construct-url-list base-url page-count))
-  (core/get-results url-list))
+  (def results (core/get-results url-list))
+  (core/filter-by-surface results req))
 
 (defroutes my_routes
            (POST "/search" [] (fn [req] (search (:body req))))

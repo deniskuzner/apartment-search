@@ -1,5 +1,6 @@
 (ns clojure-project.core
-  (:require [net.cgrand.enlive-html :as enlive]))
+  (:require [net.cgrand.enlive-html :as enlive]
+            [clojure.string :as str]))
 
 (defn html-data
   [url]
@@ -74,5 +75,12 @@
 (defn get-results
   [url-list]
   (def rows (reduce concat '() (map #(get-rows (html-data %)) url-list)))
-  (map (fn [row] {:name (get-name row) :price (get-price row) :surface (get-surface row)
-                               :location (get-location row) :href (get-href row)}) rows))
+  (map (fn [row] {:name     (get-name row) :price (get-price row) :surface (get-surface row)
+                           :location (get-location row) :href (get-href row)}) rows))
+
+(defn filter-by-surface
+  [results req]
+  (if (and (= (:minSurface req) 0) (= (:maxSurface req) 0))
+    results
+    (filter #(and (> (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req)) (< (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req))) results))
+  )
