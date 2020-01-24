@@ -1,5 +1,6 @@
 (ns clojure-project.core
-  (:require [net.cgrand.enlive-html :as enlive]
+  (:require [clojure-project.database :as db]
+            [net.cgrand.enlive-html :as enlive]
             [clojure.string :as str]))
 
 (defn html-data
@@ -84,3 +85,27 @@
     results
     (filter #(and (> (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req)) (< (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req))) results))
   )
+
+(defn search
+  [req]
+  (def base-url (construct-base-url req))
+  (def page-count (-> base-url
+                      html-data
+                      get-result-count
+                      get-page-count))
+  (def url-list (construct-url-list base-url page-count))
+  (def results (get-results url-list))
+  (filter-by-surface results req))
+
+(defn start-subscription
+  [req]
+  (def db-apartments (db/get-subscription-apartments (:subscription_id req)))
+  (def web-apartments (search req))
+  (db/insert-apartments (map #(assoc % :subscription_id (:subscription_id req)) (filter #(= nil (some (fn [web-aparment] (= (:href web-aparment) (:href %))) db-apartments)) web-apartments)))
+  )
+
+(defn subscribe
+  [req]
+  (def subscription-id (get (first (db/subscribe req)) :generated_key))
+  (start-subscription {:city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
+                       :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id}))

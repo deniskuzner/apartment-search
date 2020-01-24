@@ -7,10 +7,6 @@
                :user "root"
                :password ""})
 
-(defn select []
-  (j/query mysql-db
-           ["select * from users"]))
-
 (defn registration
   [user]
   (let [u (first (j/query mysql-db
@@ -28,3 +24,19 @@
     (if (nil? u)
       (bad-request "Incorrect username or password!")
       u)))
+
+(defn subscribe
+  [params]
+  (j/insert! mysql-db :subscriptions
+             params)
+  )
+
+(defn get-subscription-apartments
+  [subscription-id]
+  (j/query mysql-db
+           ["select * from apartments where subscription_id = ?" subscription-id]))
+
+(defn insert-apartments
+  [apartments]
+  (j/insert-multi! mysql-db :apartments
+                      apartments))

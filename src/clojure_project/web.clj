@@ -26,22 +26,11 @@
    )
   )
 
-(defn search
-  [req]
-  (def base-url (core/construct-base-url req))
-  (def page-count (-> base-url
-                      core/html-data
-                      core/get-result-count
-                      core/get-page-count))
-  (def url-list (core/construct-url-list base-url page-count))
-  (def results (core/get-results url-list))
-  (core/filter-by-surface results req))
-
 (defroutes my_routes
-           (POST "/search" [] (fn [req] (search (:body req))))
-           (GET "/mysql" [] (db/select))
            (POST "/registration" [] (fn [req] (db/registration (:body req))))
            (POST "/login" [] (fn [req] (db/login (:body req))))
+           (POST "/search" [] (fn [req] (core/search (:body req))))
+           (POST "/subscribe" [] (fn [req] (core/subscribe (:body req))))
            (route/resources "/"))
 
 (def app (wrap-json-body (wrap-cors (wrap-json-response (allow-cross-origin my_routes)) :access-control-allow-methods #{:get :post :delete :options}
