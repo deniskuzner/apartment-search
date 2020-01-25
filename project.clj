@@ -12,5 +12,6 @@
                  [metosin/ring-http-response "0.9.0"]
                  [compojure "1.2.0-SNAPSHOT"]
                  [org.clojure/java.jdbc "0.7.11"]
-                 [mysql/mysql-connector-java "5.1.25"]]
+                 [mysql/mysql-connector-java "5.1.25"]
+                 [com.draines/postal "2.0.3"]]
   :repl-options {:init-ns clojure-project.core})

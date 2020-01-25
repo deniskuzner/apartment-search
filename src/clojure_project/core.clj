@@ -1,5 +1,6 @@
 (ns clojure-project.core
   (:require [clojure-project.database :as db]
+            [clojure-project.email :as email]
             [net.cgrand.enlive-html :as enlive]
             [clojure.string :as str]))
 
@@ -79,11 +80,18 @@
   (map (fn [row] {:name     (get-name row) :price (get-price row) :surface (get-surface row)
                            :location (get-location row) :href (get-href row)}) rows))
 
+(defn is-number
+  [s]
+  (every? #(Character/isDigit %) s))
+
 (defn filter-by-surface
   [results req]
   (if (and (= (:minSurface req) 0) (= (:maxSurface req) 0))
     results
-    (filter #(and (> (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req)) (< (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req))) results))
+    (filter #(if (is-number (first (str/split (:surface %) #" ")))
+               (and (>= (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req))
+                    (<= (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req)))
+               ) results))
   )
 
 (defn search
@@ -97,11 +105,18 @@
   (def results (get-results url-list))
   (filter-by-surface results req))
 
+(defn get-new-apartments
+  [db-apartments web-apartments subscription-id]
+  (map #(assoc % :subscription_id subscription-id) (filter #(= nil (some (fn [web-aparment] (= (:href web-aparment) (:href %))) db-apartments)) web-apartments))
+  )
+
 (defn start-subscription
   [req]
   (def db-apartments (db/get-subscription-apartments (:subscription_id req)))
   (def web-apartments (search req))
-  (db/insert-apartments (map #(assoc % :subscription_id (:subscription_id req)) (filter #(= nil (some (fn [web-aparment] (= (:href web-aparment) (:href %))) db-apartments)) web-apartments)))
+  (def new-apartments (get-new-apartments db-apartments web-apartments (:subscription_id req)))
+  (db/insert-apartments new-apartments)
+  (email/send-email "amsi.clojure.test@gmail.com" new-apartments)
   )
 
 (defn subscribe
