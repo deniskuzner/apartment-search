@@ -31,6 +31,11 @@
              params)
   )
 
+(defn get-subscriptions
+  []
+  (j/query mysql-db
+           ["select * from subscriptions"]))
+
 (defn get-subscription-apartments
   [subscription-id]
   (j/query mysql-db

@@ -40,4 +40,6 @@
 
 (defn -main
   [& args]
-  (run-jetty app {:port 3000}))
+  (core/on-start-subscriptions)
+  (run-jetty app {:port 3000})
+  )
