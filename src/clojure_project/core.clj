@@ -127,6 +127,13 @@
       (filter #(owner-ad? %) results)))
   )
 
+(defn in?
+  "true if coll contains el"
+  [coll el]
+  (if (= nil (some #(= el %) coll))
+    false
+    true))
+
 (defn search
   [req]
   (def base-url (construct-base-url req))
@@ -155,6 +162,6 @@
 
 (defn subscribe
   [req]
-  (def subscription-id (get (first (db/subscribe req)) :generated_key))
+  (def subscription-id (get (first (db/subscribe (dissoc (assoc req :agency (in? (:advertiser req) "agencija") :owner (in? (:advertiser req) "vlasnik")) :advertiser))) :generated_key))
   (start-subscription {:city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
-                       :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id}))
+                       :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id :advertiser (:advertiser req)}))
