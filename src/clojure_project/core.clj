@@ -48,6 +48,12 @@
   [row]
   (str "https://www.nekretnine.rs" (get-in (first (enlive/select row [:h2 :a])) [:attrs :href])))
 
+(defn get-advertiser
+  [row]
+  (def result-page (html-data (:href row)))
+  (get (first (enlive/select result-page [:figcaption.d-flex.flex-column :div])) :content)
+  )
+
 (defn construct-city-part
   [req]
   (if-not (clojure.string/blank? (:cityPart req))
@@ -88,10 +94,37 @@
   [results req]
   (if (and (= (:minSurface req) 0) (= (:maxSurface req) 0))
     results
-    (filter #(if (is-number (first (str/split (:surface %) #" ")))
-               (and (>= (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req))
-                    (<= (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req)))
-               ) results))
+    (if (= (:maxSurface req) 0)
+      (filter #(if (is-number (first (str/split (:surface %) #" ")))
+                 (>= (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req))) results)
+      (filter #(if (is-number (first (str/split (:surface %) #" ")))
+                 (and (>= (Integer/parseInt (first (str/split (:surface %) #" "))) (:minSurface req))
+                      (<= (Integer/parseInt (first (str/split (:surface %) #" "))) (:maxSurface req)))
+                 ) results))
+    )
+  )
+
+(defn agency-ad?
+  [apartment]
+  (if (nil? (get-advertiser apartment))
+    false
+    true)
+  )
+
+(defn owner-ad?
+  [apartment]
+  (if (nil? (get-advertiser apartment))
+    true
+    false)
+  )
+
+(defn filter-by-advertiser
+  [results req]
+  (if (or (= 2 (count (:advertiser req))) (= 0 (count (:advertiser req))))
+    results
+    (if (= "agencija" (first (:advertiser req)))
+      (filter #(agency-ad? %) results)
+      (filter #(owner-ad? %) results)))
   )
 
 (defn search
@@ -103,7 +136,8 @@
                       get-page-count))
   (def url-list (construct-url-list base-url page-count))
   (def results (get-results url-list))
-  (filter-by-surface results req))
+  (filter-by-advertiser (filter-by-surface results req) req)
+  )
 
 (defn get-new-apartments
   [db-apartments web-apartments subscription-id]
