@@ -31,6 +31,9 @@
            (POST "/login" [] (fn [req] (db/login (:body req))))
            (POST "/search" [] (fn [req] (core/search (:body req))))
            (POST "/subscribe" [] (fn [req] (core/subscribe (:body req))))
+           (GET "/user/:id" [id] (db/get-user id))
+           (GET "/subscriptions/:id" [id] (db/get-user-subscriptions id))
+           (DELETE "/delete-subscription/:id" [id] (core/delete-subscription id))
            (route/resources "/"))
 
 (def app (wrap-json-body (wrap-cors (wrap-json-response (allow-cross-origin my_routes)) :access-control-allow-methods #{:get :post :delete :options}
@@ -40,6 +43,6 @@
 
 (defn -main
   [& args]
-  (core/on-start-subscriptions)
+  ;(core/on-start-subscriptions)
   (run-jetty app {:port 3000})
   )

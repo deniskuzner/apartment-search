@@ -19,8 +19,8 @@
 
 (defn login
   [user]
-  (let [u (first (j/query mysql-db
-                          ["select * from users where username = ? and password = ?" (:username user) (:password user)]))]
+  (let [u (j/query mysql-db
+                   ["select * from users where username = ? and password = ?" (:username user) (:password user)])]
     (if (nil? u)
       (bad-request "Incorrect username or password!")
       u)))
@@ -31,7 +31,7 @@
              params)
   )
 
-(defn get-subscriptions
+(defn get-all-subscriptions
   []
   (j/query mysql-db
            ["select * from subscriptions"]))
@@ -45,3 +45,21 @@
   [apartments]
   (j/insert-multi! mysql-db :apartments
                       apartments))
+
+(defn get-user
+  [id]
+  (j/query mysql-db
+           ["select * from users where id = ?" id]))
+
+(defn get-user-subscriptions
+  [user-id]
+  (j/query mysql-db
+            ["select * from subscriptions where user_id = ?" user-id]))
+
+(defn delete-subscription
+  [sub-id]
+  (j/execute! mysql-db ["DELETE FROM subscriptions WHERE id = ?" sub-id]))
+
+(defn delete-subscription-apartments
+  [sub-id]
+  (j/execute! mysql-db ["DELETE FROM apartments WHERE subscription_id = ?" sub-id]))

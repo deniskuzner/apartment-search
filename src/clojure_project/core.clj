@@ -178,8 +178,13 @@
 
 (defn on-start-subscriptions
   []
-  (def db-subs (db/get-subscriptions))
+  (def db-subs (db/get-all-subscriptions))
   (def formated-subs (map #(db-to-web-transformation %) db-subs))
   ;ovde pokrenuti za svaki
   (doseq [i formated-subs] (start-subscription i))
   )
+
+(defn delete-subscription
+  [sub-id]
+  (db/delete-subscription-apartments sub-id)
+  (db/delete-subscription sub-id))
