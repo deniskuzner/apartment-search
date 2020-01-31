@@ -2,7 +2,8 @@
   (:require [clojure-project.database :as db]
             [clojure-project.email :as email]
             [net.cgrand.enlive-html :as enlive]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:use overtone.at-at))
 
 (defn html-data
   [url]
@@ -151,37 +152,37 @@
   (map #(assoc % :subscription_id subscription-id) (filter #(= nil (some (fn [web-aparment] (= (:href web-aparment) (:href %))) db-apartments)) web-apartments))
   )
 
-;ovo ce da se vrti periodicno
 (defn start-subscription
   [req]
   (def db-apartments (db/get-subscription-apartments (:subscription_id req)))
   (def web-apartments (search req))
   (def new-apartments (get-new-apartments db-apartments web-apartments (:subscription_id req)))
   (db/insert-apartments new-apartments)
-  (email/send-email "amsi.clojure.test@gmail.com" new-apartments)
+  (email/send-email (:email (first (db/get-user (:user_id req)))) new-apartments)
   )
 
 (defn subscribe
   [req]
   (def subscription-id (get (first (db/subscribe (dissoc (assoc req :agency (in? (:advertiser req) "agencija") :owner (in? (:advertiser req) "vlasnik")) :advertiser))) :generated_key))
-  (start-subscription {:city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
+  (start-subscription {:user_id (:user_id req) :city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
                        :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id :advertiser (:advertiser req)}))
 
 (defn db-to-web-transformation
   [req]
-  {:city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
+  {:user_id (:user_id req) :city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
    :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id (:id req) :advertiser (if (= (:agency req) (:owner req))
                                                                                                     ["agencija" "vlasnik"]
                                                                                                     (if (= true (:agency req))
                                                                                                       ["agencija"]
                                                                                                       ["vlasnik"]))})
 
+(def my-pool (mk-pool))
+
 (defn on-start-subscriptions
   []
-  (def db-subs (db/get-all-subscriptions))
-  (def formated-subs (map #(db-to-web-transformation %) db-subs))
-  ;ovde pokrenuti za svaki
-  (doseq [i formated-subs] (start-subscription i))
+  (every 3600000 (fn [] (def db-subs (db/get-all-subscriptions))
+           (def formated-subs (map #(db-to-web-transformation %) db-subs))
+           (doseq [i formated-subs] (start-subscription i))) my-pool)
   )
 
 (defn delete-subscription
