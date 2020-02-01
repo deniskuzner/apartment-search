@@ -137,14 +137,14 @@
 
 (defn search
   [req]
-  (def base-url (construct-base-url req))
-  (def page-count (-> base-url
-                      html-data
-                      get-result-count
-                      get-page-count))
-  (def url-list (construct-url-list base-url page-count))
-  (def results (get-results url-list))
-  (filter-by-advertiser (filter-by-surface results req) req)
+  (let [base-url (construct-base-url req)]
+    (let [page-count (-> base-url
+                         html-data
+                         get-result-count
+                         get-page-count)]
+      (let [url-list (construct-url-list base-url page-count)]
+        (let [results (get-results url-list)]
+          (filter-by-advertiser (filter-by-surface results req) req)))))
   )
 
 (defn get-new-apartments
@@ -154,11 +154,11 @@
 
 (defn start-subscription
   [req]
-  (def db-apartments (db/get-subscription-apartments (:subscription_id req)))
-  (def web-apartments (search req))
-  (def new-apartments (get-new-apartments db-apartments web-apartments (:subscription_id req)))
-  (db/insert-apartments new-apartments)
-  (email/send-email (:email (first (db/get-user (:user_id req)))) new-apartments)
+  (let [db-apartments (db/get-subscription-apartments (:subscription_id req))]
+    (let [web-apartments (search req)]
+      (let [new-apartments (get-new-apartments db-apartments web-apartments (:subscription_id req))]
+        (db/insert-apartments new-apartments)
+        (email/send-email (:email (first (db/get-user (:user_id req)))) new-apartments))))
   )
 
 (defn subscribe
