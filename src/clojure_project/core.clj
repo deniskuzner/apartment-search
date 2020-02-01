@@ -51,8 +51,8 @@
 
 (defn get-advertiser
   [row]
-  (def result-page (html-data (:href row)))
-  (get (first (enlive/select result-page [:figcaption.d-flex.flex-column :div])) :content)
+  (let [result-page (html-data (:href row))]
+    (get (first (enlive/select result-page [:figcaption.d-flex.flex-column :div])) :content))
   )
 
 (defn construct-city-part
@@ -83,9 +83,9 @@
 
 (defn get-results
   [url-list]
-  (def rows (reduce concat '() (map #(get-rows (html-data %)) url-list)))
-  (map (fn [row] {:name     (get-name row) :price (get-price row) :surface (get-surface row)
-                           :location (get-location row) :href (get-href row)}) rows))
+  (let [rows (reduce concat '() (map #(get-rows (html-data %)) url-list))]
+    (map (fn [row] {:name     (get-name row) :price (get-price row) :surface (get-surface row)
+                    :location (get-location row) :href (get-href row)}) rows)))
 
 (defn is-number
   [s]
@@ -163,9 +163,9 @@
 
 (defn subscribe
   [req]
-  (def subscription-id (get (first (db/subscribe (dissoc (assoc req :agency (in? (:advertiser req) "agencija") :owner (in? (:advertiser req) "vlasnik")) :advertiser))) :generated_key))
-  (start-subscription {:user_id (:user_id req) :city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
-                       :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id :advertiser (:advertiser req)}))
+  (let [subscription-id (get (first (db/subscribe (dissoc (assoc req :agency (in? (:advertiser req) "agencija") :owner (in? (:advertiser req) "vlasnik")) :advertiser))) :generated_key)]
+    (start-subscription {:user_id    (:user_id req) :city (:city req) :cityPart (:city_part req) :minPrice (:min_price req) :maxPrice (:max_price req)
+                         :minSurface (:min_surface req) :maxSurface (:max_surface req) :subscription_id subscription-id :advertiser (:advertiser req)})))
 
 (defn db-to-web-transformation
   [req]
@@ -180,9 +180,9 @@
 
 (defn on-start-subscriptions
   []
-  (every 3600000 (fn [] (def db-subs (db/get-all-subscriptions))
-           (def formated-subs (map #(db-to-web-transformation %) db-subs))
-           (doseq [i formated-subs] (start-subscription i))) my-pool)
+  (every 3600000 (fn [] (let [db-subs (db/get-all-subscriptions)]
+                          (let [formated-subs (map #(db-to-web-transformation %) db-subs)]
+                            (doseq [i formated-subs] (start-subscription i))))) my-pool)
   )
 
 (defn delete-subscription

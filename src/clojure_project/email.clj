@@ -1,10 +1,11 @@
 (ns clojure-project.email
-  (:require [postal.core :refer [send-message]]))
+  (:require [postal.core :refer [send-message]]
+            [clojure.edn]))
 
 (def conn {:host "smtp.gmail.com"
            :ssl true
            :user "amsi.clojure.test@gmail.com"
-           :pass "elyofdnmndxkkyel"})
+           :pass (:email-password (clojure.edn/read-string (slurp "config.edn")))})
 
 (defn generate-table-rows
   [body]
