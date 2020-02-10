@@ -15,4 +15,5 @@
                  [mysql/mysql-connector-java "5.1.25"]
                  [com.draines/postal "2.0.3"]
                  [overtone/at-at "1.2.0"]]
-  :repl-options {:init-ns clojure-project.core})
+  :repl-options {:init-ns clojure-project.core}
+  :main clojure-project.web)

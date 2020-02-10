@@ -45,6 +45,6 @@
                         :subject "Oglasi - pretplata"
                         :body    [:alternative
                                   {:type    "text/plain"
-                                   :content "You just won the lottery!"}
+                                   :content ""}
                                   {:type "text/html; charset=utf-8"
                                    :content (generate-html-body body)}]}))

@@ -5,7 +5,7 @@
 (def mysql-db {:dbtype "mysql"
                :dbname "clojure_project_db"
                :user "root"
-               :password ""})
+               :password (:db-password (clojure.edn/read-string (slurp "config.edn")))})
 
 (defn registration
   [user]
