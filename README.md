@@ -2,7 +2,7 @@
 
 Web application built with Clojure. The goal of this project is to help in searching apartment ads. After registration and login, user can search for apartments by multiple parameters like city, location, price, area and advertiser. Also, user can subscribe to a specific search if he wants to be notified by email when new parameter-matched apartment appears.
 
-<img src="images/1.jpg">
+![img1](images/1.jpg)
 
 ## Getting Started
 
